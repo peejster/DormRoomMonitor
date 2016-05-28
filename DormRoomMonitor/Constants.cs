@@ -38,8 +38,8 @@
     /// </summary>
     public static class GpioConstants
     {
-        // The GPIO pin that the doorbell button is attached to
-        public const int ButtonPinID = 5;
+        // The GPIO pin that the PIR motion sensor is attached to
+        public const int PirPin = 5;
 
         // The GPIO pin that the door lock is attached to
         public const int DoorLockPinID = 6;
