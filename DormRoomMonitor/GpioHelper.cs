@@ -5,53 +5,40 @@ using Windows.Devices.Gpio;
 namespace DormRoomMonitor
 {
     /// <summary>
-    /// Interacts with device GPIO controller in order to control door lock and monitor doorbell
+    /// Interface with the device's GPIO controller in order to monitor for motion and control the LED.
     /// </summary>
     public class GpioHelper
     {
         private GpioController gpioController;
-        private GpioPin doorbellPin;
+        private GpioPin pirSensor;
         private GpioPin doorLockPin;
 
         /// <summary>
-        /// Attempts to initialize Gpio for application. This includes doorbell interaction and locking/unlccking of door.
+        /// Initialize the GPIO pins. Configure the PIR motion sensor and the LED.
         /// Returns true if initialization is successful and Gpio can be utilized. Returns false otherwise.
         /// </summary>
         public bool Initialize()
         {
-            // Gets the GpioController
+            // Get the GpioController
             gpioController = GpioController.GetDefault();
             if (gpioController == null)
             {
-                // There is no Gpio Controller on this device, return false.
+                // There is no Gpio Controller on this device so return false.
                 return false;
             }
 
-            // Opens the GPIO pin that interacts with the doorbell button
-            doorbellPin = gpioController.OpenPin(GpioConstants.ButtonPinID);
+            // Open the GPIO pin that interacts with the PIR sensor
+            pirSensor = gpioController.OpenPin(GpioConstants.PirPin);
 
-            if (doorbellPin == null)
+            if (pirSensor == null)
             {
-                // Pin wasn't opened properly, return false
+                // Pin wasn't opened properly so return false
                 return false;
             }
 
-            doorbellPin.SetDriveMode(GpioPinDriveMode.Input);
+            // Set the direction of the PIR sensor as input
+            pirSensor.SetDriveMode(GpioPinDriveMode.Input);
 
-/*            // Set a debounce timeout to filter out switch bounce noise from a button press
-            doorbellPin.DebounceTimeout = TimeSpan.FromMilliseconds(25);
-
-            if (doorbellPin.IsDriveModeSupported(GpioPinDriveMode.InputPullUp))
-            {
-                // Take advantage of built in pull-up resistors of Raspberry Pi 2 and DragonBoard 410c
-                doorbellPin.SetDriveMode(GpioPinDriveMode.InputPullUp);
-            }
-            else
-            {
-                // MBM does not support PullUp as it does not have built in pull-up resistors 
-                doorbellPin.SetDriveMode(GpioPinDriveMode.Input);
-            }
-*/
             // Opens the GPIO pin that interacts with the door lock system
             doorLockPin = gpioController.OpenPin(GpioConstants.DoorLockPinID);
             if (doorLockPin == null)
@@ -69,11 +56,11 @@ namespace DormRoomMonitor
         }
 
         /// <summary>
-        /// Returns the GpioPin that handles the doorbell button. Intended to be used in order to setup event handler when user pressed Doorbell.
+        /// Returns the GpioPin for the PIR sensor. Will be used in to setup event handler when motion is detected.
         /// </summary>
-        public GpioPin GetDoorBellPin()
+        public GpioPin GetPirSensor()
         {
-            return doorbellPin;
+            return pirSensor;
         }
 
         /// <summary>
