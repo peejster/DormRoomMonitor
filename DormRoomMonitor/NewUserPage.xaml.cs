@@ -47,6 +47,9 @@ namespace DormRoomMonitor
             catch (Exception exception)
             {
                 Debug.WriteLine("Error when navigating to NewUserPage: " + exception.Message);
+
+                // Navigate back to main page
+                Frame.Navigate(typeof(MainPage));
             }
         }
 

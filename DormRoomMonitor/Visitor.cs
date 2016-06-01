@@ -4,7 +4,7 @@ using Windows.UI.Xaml.Media.Imaging;
 namespace DormRoomMonitor
 {
     /// <summary>
-    /// Contains information such as name and location of ID images in storage for each authorized visitor to the Facial Recognition Door
+    /// Contains information such as name and location of ID images in storage for each authorized visitor to the dorm room
     /// </summary>
     class Visitor
     {

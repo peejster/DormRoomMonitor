@@ -107,6 +107,9 @@
     <Compile Include="HSFace.cs" />
     <Compile Include="HSPerson.cs" />
     <Compile Include="IFaceRecognizer.cs" />
+    <Compile Include="IntruderProfilePage.xaml.cs">
+      <DependentUpon>IntruderProfilePage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -145,6 +148,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="IntruderProfilePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

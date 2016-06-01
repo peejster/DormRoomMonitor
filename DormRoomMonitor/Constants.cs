@@ -5,7 +5,8 @@
     /// </summary>
     public static class GeneralConstants
     {
-        // This variable should be set to false for devices, unlike the Raspberry Pi, that have GPU support
+        // With no GPU support, the Raspberry Pi cannot display the live camera feed so this variable should be set to true.
+        // However, if you are deploying to other harware on which Windows 10 IoT Core does have GPU support, set it to fale.
         public const bool DisableLiveCameraFeed = true;
 
         // Oxford Face API Primary should be entered here
@@ -13,8 +14,10 @@
         public const string OxfordAPIKey = "b2b1adb22ce44bcc91e5cdfe2afb4f53";
 
         // Name of the folder in which all Whitelist data is stored
-        public const string WhiteListFolderName = "Facial Recognition Door Whitelist";
+        public const string WhiteListFolderName = "Dorm Room Monitor Whitelist";
 
+        // Name of the folder in which all the intruder data is stored
+        public const string IntruderFolderName = "Dorm Room Monitor Intruders";
     }
 
     /// <summary>
@@ -22,14 +25,14 @@
     /// </summary>
     public static class SpeechContants
     {
-        public const string InitialGreetingMessage = "Welcome to the Facial Recognition Door! Speech has been initialized.";
-
-        public const string VisitorNotRecognizedMessage = "Sorry! I don't recognize you, so I cannot open the door.";
+        public const string InitialGreetingMessage = "Dorm room monitor has been activated.";
+        public const string IntruderDetectedMessage = "Intruder detected.";
+        public const string NotAllowedEntryMessage = "Sorry! I don't recognize you. You are not authorized to be here.";
         public const string NoCameraMessage = "Sorry! It seems like your camera has not been fully initialized.";
 
-        public static string GeneralGreetigMessage(string visitorName)
+        public static string AllowedEntryMessage(string visitorName)
         {
-            return "Welcome to the Facial Recognition Door " + visitorName + "! I will open the door for you.";
+            return "Hello " + visitorName + "! You are authorized to be here.";
         }
     }
 

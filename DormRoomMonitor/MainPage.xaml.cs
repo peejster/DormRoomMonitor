@@ -26,16 +26,22 @@ namespace DormRoomMonitor
         private StorageFolder whitelistFolder;
         private bool currentlyUpdatingWhitelist;
 
+        // Intruder Related Variables:
+        private List<Visitor> intruderVisitors = new List<Visitor>();
+        private StorageFolder intrudersFolder;
+        private bool currentlyUpdatingIntruders;
+
         // Speech Related Variables:
         private SpeechHelper speech;
 
         // GPIO Related Variables:
         private GpioHelper gpioHelper;
         private bool gpioAvailable;
-        private bool doorbellJustPressed = false;
+        private bool motionJustSensed = false;
 
         // GUI Related Variables:
         private double visitorIDPhotoGridMaxWidth = 0;
+        private double intruderIDPhotoGridMaxWidth = 0;
 
         /// <summary>
         /// Called when the page is first navigated to.
@@ -47,19 +53,22 @@ namespace DormRoomMonitor
             // Causes this page to save its state when navigating to other pages
             NavigationCacheMode = NavigationCacheMode.Enabled;
 
+
+            // Check to see if Oxford facial recongition has been initialized
             if (initializedOxford == false)
             {
-                // If Oxford facial recognition has not been initialized, attempt to initialize it
+                // If not, attempt to initialize it
                 InitializeOxford();
             }
 
+            // Check to see if GPIO is available
             if (gpioAvailable == false)
             {
-                // If GPIO is not available, attempt to initialize it
+                // If not, attempt to initialize it
                 InitializeGpio();
             }
 
-            // If user has set the DisableLiveCameraFeed within Constants.cs to true, disable the feed:
+            // If user has set the DisableLiveCameraFeed within Constants.cs to true, disable the feed.
             if (GeneralConstants.DisableLiveCameraFeed)
             {
                 LiveFeedPanel.Visibility = Visibility.Collapsed;
@@ -81,6 +90,8 @@ namespace DormRoomMonitor
             {
                 UpdateWhitelistedVisitors();
             }
+
+            UpdateIntruderVisitors();
         }
 
         /// <summary>
@@ -93,6 +104,9 @@ namespace DormRoomMonitor
 
             // Populates UI grid with whitelisted visitors
             UpdateWhitelistedVisitors();
+
+            // Populates UI grid with intruders
+            UpdateIntruderVisitors();
         }
 
         /// <summary>
@@ -108,20 +122,20 @@ namespace DormRoomMonitor
             }
             catch
             {
-                // This can fail if application is run on a device, such as a laptop, that does not have a GPIO controller
+                // This can fail if application is run on a device, such as a laptop, that does not have a GPIO controller.
                 gpioAvailable = false;
                 Debug.WriteLine("GPIO controller not available.");
             }
 
-            // If initialization was successfull, attach doorbell pressed event handler
+            // If initialization was successfull, attach motion sensor event handler
             if (gpioAvailable)
             {
-                gpioHelper.GetDoorBellPin().ValueChanged += DoorBellPressed;
+                gpioHelper.GetPirSensor().ValueChanged += PirSensorChanged;
             }
         }
 
         /// <summary>
-        /// Triggered when webcam feed loads both for the first time and every time page is navigated to.
+        /// Triggered when webcam feed loads both for the first time and every time this page is navigated to.
         /// If no WebcamHelper has been created, it creates one. Otherwise, simply restarts webcam preview feed on page.
         /// </summary>
         private async void WebcamFeed_Loaded(object sender, RoutedEventArgs e)
@@ -181,21 +195,29 @@ namespace DormRoomMonitor
         }
 
         /// <summary>
-        /// Triggered when user presses physical door bell button
+        /// Triggered when the intruders grid is loaded. Sets the size of each photo within the grid.
         /// </summary>
-        private async void DoorBellPressed(GpioPin sender, GpioPinValueChangedEventArgs args)
+        private void IntrudersGrid_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!doorbellJustPressed)
+            intruderIDPhotoGridMaxWidth = (IntrudersGrid.ActualWidth / 3) - 10;
+        }
+
+        /// <summary>
+        /// Triggered when motion sensor changes - someone either enters room or someone exits room
+        /// </summary>
+        private async void PirSensorChanged(GpioPin sender, GpioPinValueChangedEventArgs args)
+        {
+            if (!motionJustSensed)
             {
-                // Checks to see if even was triggered from a press or release of button
-                if (args.Edge == GpioPinEdge.FallingEdge)
+                // Checks to see if event was triggered from an entry (rising edge) or exit (falling edge)
+                if (args.Edge == GpioPinEdge.RisingEdge)
                 {
-                    //Doorbell was just pressed
-                    doorbellJustPressed = true;
+                    //motion sensor was just triggered
+                    motionJustSensed = true;
 
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
                     {
-                        await DoorbellPressed();
+                        await SomeoneEntered();
                     });
 
                 }
@@ -203,23 +225,31 @@ namespace DormRoomMonitor
         }
 
         /// <summary>
-        /// Triggered when user presses virtual doorbell app bar button
+        /// Triggered when user presses virtual motion button on the app bar
         /// </summary>
-        private async void DoorbellButton_Click(object sender, RoutedEventArgs e)
+        private async void MotionButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!doorbellJustPressed)
+            if (!motionJustSensed)
             {
-                doorbellJustPressed = true;
-                await DoorbellPressed();
+                //motion sensor was just triggered
+                motionJustSensed = true;
+                await SomeoneEntered();
             }
         }
 
         /// <summary>
-        /// Called when user hits physical or vitual doorbell buttons. Captures photo of current webcam view and sends it to Oxford for facial recognition processing.
+        /// Called when someone enters room or vitual motion button is pressed.
+        /// Captures photo of current webcam view and sends it to Oxford for facial recognition processing.
         /// </summary>
-        private async Task DoorbellPressed()
+        private async Task SomeoneEntered()
         {
-            // Display analysing visitors grid to inform user that doorbell press was registered
+            // Announce that an intruder has been detected
+            await speech.Read(SpeechContants.IntruderDetectedMessage);
+
+            // Pause to allow announcement to complete
+            // Task.Delay(5000).Wait();
+
+            // Display analysing visitors grid to inform user that motion was sensed
             AnalysingVisitorGrid.Visibility = Visibility.Visible;
 
             // List to store visitors recognized by Oxford Face API
@@ -230,12 +260,12 @@ namespace DormRoomMonitor
             if (webcam.IsInitialized() && initializedOxford)
             {
                 // Stores current frame from webcam feed in a temporary folder
-                StorageFile image = await webcam.CapturePhoto();
+                StorageFile intruderImage = await webcam.CapturePhoto();
 
                 try
                 {
-                    // Oxford determines whether or not the visitor is on the Whitelist and returns true if so
-                    recognizedVisitors = await OxfordFaceAPIHelper.IsFaceInWhitelist(image);
+                    // Oxford determines whether or not the visitor is on the Whitelist and returns recongized visitor if so
+                    recognizedVisitors = await OxfordFaceAPIHelper.IsFaceInWhitelist(intruderImage);
                 }
                 catch (FaceRecognitionException fe)
                 {
@@ -255,13 +285,35 @@ namespace DormRoomMonitor
 
                 if (recognizedVisitors.Count > 0)
                 {
-                    // If everything went well and a visitor was recognized, unlock the door:
-                    UnlockDoor(recognizedVisitors[0]);
+                    // If everything went well and a visitor was recognized, allow the person entry
+                    AllowEntry(recognizedVisitors[0]);
                 }
                 else
                 {
                     // Otherwise, inform user that they were not recognized by the system
-                    await speech.Read(SpeechContants.VisitorNotRecognizedMessage);
+                    await speech.Read(SpeechContants.NotAllowedEntryMessage);
+
+                    // If the intrudersFolder has not been opened, open it
+                    if (intrudersFolder == null)
+                    {
+                        // Create the intrudersFolder if it doesn't exist; if it already exists, open it.
+                        intrudersFolder = await KnownFolders.PicturesLibrary.CreateFolderAsync(GeneralConstants.IntruderFolderName, CreationCollisionOption.OpenIfExists);
+                    }
+
+                    // Determine the number of intruders already recorded
+                    var intruderSubFolders = await intrudersFolder.GetFoldersAsync();
+                    int intruderCount = intruderSubFolders.Count;
+
+                    // Convert the intruder count integer to string for the subfolder name
+                    string subFolderName = "intruder" + intruderCount.ToString();
+
+                    // Create a subfolder to store this specific intruder's photo
+                    StorageFolder currentFolder = await intrudersFolder.CreateFolderAsync(subFolderName, CreationCollisionOption.ReplaceExisting);
+                    // Move the already captured photo the intruder's folder
+                    await intruderImage.MoveAsync(currentFolder);
+
+                    // Refresh the UI grid of intruders
+                    UpdateIntruderVisitors();
                 }
             }
             else
@@ -280,17 +332,17 @@ namespace DormRoomMonitor
                 }
             }
 
-            doorbellJustPressed = false;
+            motionJustSensed = false;
             AnalysingVisitorGrid.Visibility = Visibility.Collapsed;
         }
 
         /// <summary>
-        /// Unlocks door and greets visitor
+        /// Allows the person entry into the room
         /// </summary>
-        private async void UnlockDoor(string visitorName)
+        private async void AllowEntry(string visitorName)
         {
             // Greet visitor
-            await speech.Read(SpeechContants.GeneralGreetigMessage(visitorName));
+            await speech.Read(SpeechContants.AllowedEntryMessage(visitorName));
 
             if (gpioAvailable)
             {
@@ -312,7 +364,7 @@ namespace DormRoomMonitor
         }
 
         /// <summary>
-        /// Updates internal list of of whitelisted visitors (whitelistedVisitors) and the visible UI grid
+        /// Updates internal list of whitelisted visitors (whitelistedVisitors) and the visible UI grid
         /// </summary>
         private async void UpdateWhitelistedVisitors()
         {
@@ -337,36 +389,44 @@ namespace DormRoomMonitor
             // If the whitelistFolder has not been opened, open it
             if (whitelistFolder == null)
             {
+                // Create the whitelistFolder if it doesn't exist; if it already exists, open it.
                 whitelistFolder = await KnownFolders.PicturesLibrary.CreateFolderAsync(GeneralConstants.WhiteListFolderName, CreationCollisionOption.OpenIfExists);
             }
 
-            // Populates subFolders list with all sub folders within the whitelist folders.
+            // Populate subFolders list with all sub folders within the whitelist folder.
             // Each of these sub folders represents the Id photos for a single visitor.
-            var subFolders = await whitelistFolder.GetFoldersAsync();
+            var whitelistSubFolders = await whitelistFolder.GetFoldersAsync();
 
             // Iterate all subfolders in whitelist
-            foreach (StorageFolder folder in subFolders)
+            foreach (StorageFolder folder in whitelistSubFolders)
             {
-                string visitorName = folder.Name;
-                var filesInFolder = await folder.GetFilesAsync();
+                // Get each visitor's name from the folder name
+                string whitelistVisitorName = folder.Name;
 
-                var photoStream = await filesInFolder[0].OpenAsync(FileAccessMode.Read);
+                // Get the files from each folder
+                var filesInWhitelistFolder = await folder.GetFilesAsync();
+
+                // Use the first photo in the folder as the visitors image for the whitelist
+                var whitelistPhotoStream = await filesInWhitelistFolder[0].OpenAsync(FileAccessMode.Read);
                 BitmapImage visitorImage = new BitmapImage();
-                await visitorImage.SetSourceAsync(photoStream);
+                await visitorImage.SetSourceAsync(whitelistPhotoStream);
 
-                Visitor whitelistedVisitor = new Visitor(visitorName, folder, visitorImage, visitorIDPhotoGridMaxWidth);
+                // Create the Visitor object will all the information about the visitor
+                Visitor whitelistedVisitor = new Visitor(whitelistVisitorName, folder, visitorImage, visitorIDPhotoGridMaxWidth);
 
+                // Add the visitor to the white list
                 whitelistedVisitors.Add(whitelistedVisitor);
             }
         }
 
         /// <summary>
-        /// Updates UserInterface list of whitelisted users from the list of Visitor objects (WhitelistedVisitors)
+        /// Updates UserInterface list of whitelisted users from the list of Visitor objects (whitelistedVisitors)
         /// </summary>
         private void UpdateWhitelistedVisitorsGrid()
         {
             // Reset source to empty list
             WhitelistedUsersGrid.ItemsSource = new List<Visitor>();
+
             // Set source of WhitelistedUsersGrid to the whitelistedVisitors list
             WhitelistedUsersGrid.ItemsSource = whitelistedVisitors;
 
@@ -381,6 +441,86 @@ namespace DormRoomMonitor
         {
             // Navigate to UserProfilePage, passing through the selected Visitor object and the initialized WebcamHelper as a parameter
             Frame.Navigate(typeof(UserProfilePage), new UserProfileObject(e.ClickedItem as Visitor, webcam));
+        }
+
+        /// <summary>
+        /// Updates maintained list of intruders (intruderVisitors) and the visible UI grid
+        /// </summary>
+        private async void UpdateIntruderVisitors()
+        {
+            // If the list of intruders isn't already being updated, update the list
+            if (!currentlyUpdatingIntruders)
+            {
+                currentlyUpdatingIntruders = true;
+                await UpdateIntruderVisitorsList();
+                UpdateIntruderVisitorsGrid();
+                currentlyUpdatingIntruders = false;
+            }
+        }
+
+        /// <summary>
+        /// Updates the list of Visitor objects with all whitelisted visitors stored on disk
+        /// </summary>
+        private async Task UpdateIntruderVisitorsList()
+        {
+            // Clear list of intruders
+            intruderVisitors.Clear();
+
+            // If the intrudersFolder has not been opened, open it
+            if (intrudersFolder == null)
+            {
+                // Create the intrudersFolder if it doesn't exist; if it already exists, open it.
+                intrudersFolder = await KnownFolders.PicturesLibrary.CreateFolderAsync(GeneralConstants.IntruderFolderName, CreationCollisionOption.OpenIfExists);
+            }
+
+            // Populates intruderSubFolders list with all sub folders within the intruder folder.
+            // Each of these sub folders represents the Id photos for a single intruder.
+            var intruderSubFolders = await intrudersFolder.GetFoldersAsync();
+
+            // Iterate all subfolders in whitelist
+            foreach (StorageFolder folder in intruderSubFolders)
+            {
+                // Get each visitor's name from the folder name
+                string intruderName = folder.Name;
+
+                // Get the files from each folder
+                var filesInIntruderFolder = await folder.GetFilesAsync();
+
+                // Use the first photo in the folder as the visitors image for the whitelist
+                var intruderPhotoStream = await filesInIntruderFolder[0].OpenAsync(FileAccessMode.Read);
+                BitmapImage intruderImage = new BitmapImage();
+                await intruderImage.SetSourceAsync(intruderPhotoStream);
+
+                // Create the Visitor object will all the information about the visitor
+                Visitor intruderVisitor = new Visitor(intruderName, folder, intruderImage, intruderIDPhotoGridMaxWidth);
+
+                // Add the visitor to the white list
+                intruderVisitors.Add(intruderVisitor);
+            }
+        }
+
+        /// <summary>
+        /// Updates UserInterface list of intruders from the list of Visitor objects (intruderVisitors)
+        /// </summary>
+        private void UpdateIntruderVisitorsGrid()
+        {
+            // Reset source to empty list
+            IntrudersGrid.ItemsSource = new List<Visitor>();
+
+            // Set source of WhitelistedUsersGrid to the whitelistedVisitors list
+            IntrudersGrid.ItemsSource = intruderVisitors;
+
+            // Hide Oxford loading ring
+            IntrudersLoadingRing.Visibility = Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// Triggered when the user selects an intruder in the IntrudersGrid 
+        /// </summary>
+        private void IntrudersGrid_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            // Navigate to IntruderProfilePage, passing through the selected Visitor object and the initialized WebcamHelper as a parameter
+            Frame.Navigate(typeof(IntruderProfilePage), new UserProfileObject(e.ClickedItem as Visitor, webcam));
         }
 
         /// <summary>
