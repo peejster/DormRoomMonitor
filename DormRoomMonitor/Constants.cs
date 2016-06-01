@@ -11,7 +11,7 @@
 
         // Oxford Face API Primary should be entered here
         // You can obtain a subscription key for Face API by following the instructions here: https://www.projectoxford.ai/doc/general/subscription-key-mgmt
-        public const string OxfordAPIKey = "<your Oxford Face API>";
+        public const string OxfordAPIKey = "<your Oxford Face API key>";
 
         // Name of the folder in which all Whitelist data is stored
         public const string WhiteListFolderName = "Dorm Room Monitor Whitelist";
