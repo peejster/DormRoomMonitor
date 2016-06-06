@@ -127,7 +127,7 @@ namespace DormRoomMonitor
                 Debug.WriteLine("GPIO controller not available.");
             }
 
-            // If initialization was successfull, attach motion sensor event handler
+            // If initialization was successful, attach motion sensor event handler
             if (gpioAvailable)
             {
                 gpioHelper.GetPirSensor().ValueChanged += PirSensorChanged;
