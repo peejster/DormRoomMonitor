@@ -343,12 +343,6 @@ namespace DormRoomMonitor
         {
             // Greet visitor
             await speech.Read(SpeechContants.AllowedEntryMessage(visitorName));
-
-            if (gpioAvailable)
-            {
-                // Unlock door for specified ammount of time
-                gpioHelper.UnlockDoor();
-            }
         }
 
         /// <summary>

@@ -14,7 +14,7 @@
         public const string OxfordAPIKey = "<your Oxford Face API key>";
 
         // Name of the folder in which all Whitelist data is stored
-        public const string WhiteListFolderName = "Dorm Room Monitor Whitelist";
+        public const string WhiteListFolderName = "Dorm_Room_Monitor_Whitelist";
 
         // Name of the folder in which all the intruder data is stored
         public const string IntruderFolderName = "Dorm Room Monitor Intruders";
@@ -43,12 +43,6 @@
     {
         // The GPIO pin that the PIR motion sensor is attached to
         public const int PirPin = 5;
-
-        // The GPIO pin that the door lock is attached to
-        public const int DoorLockPinID = 6;
-
-        // The amount of time in seconds that the door will remain unlocked for
-        public const int DoorLockOpenDurationSeconds = 10;
     }
 }
 

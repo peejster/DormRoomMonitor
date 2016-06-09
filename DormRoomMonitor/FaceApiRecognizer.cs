@@ -118,7 +118,7 @@ namespace DormRoomMonitor.FacialRecognition
                 // detele person group if already exists
                 try
                 {
-                    // An exception throwed if the person group doesn't exist
+                    // An exception is thrown if the person group doesn't exist
                     await _faceApiClient.GetPersonGroupAsync(whitelistId);
                     UpdateProgress(progress, ++progressCnt);
 
@@ -132,7 +132,7 @@ namespace DormRoomMonitor.FacialRecognition
                     // Group not found
                     if (ce.ErrorCode == "PersonGroupNotFound")
                     {
-                        Debug.WriteLine("The group doesn't exists before");
+                        Debug.WriteLine("The group doesn't exist");
                     }
                     else
                     {
@@ -194,6 +194,8 @@ namespace DormRoomMonitor.FacialRecognition
                     {
 
                         var faceId = await DetectFaceFromImage(file);
+                        Debug.WriteLine("Face identified: " + faceId);
+
                         await AddFace(personId, faceId, file.Path);
 
                         Debug.WriteLine("This image added to whitelist successfully!");
@@ -375,7 +377,7 @@ namespace DormRoomMonitor.FacialRecognition
         /// <returns></returns>
         private async Task<Guid> CreatePerson(string personName, StorageFolder personFolder)
         {
-            var ret = await _faceApiClient.CreatePersonAsync(WhitelistId, null, personName);
+            var ret = await _faceApiClient.CreatePersonAsync(WhitelistId, personName);
             var personId = ret.PersonId;
 
             _whitelist.AddPerson(personId, personName, personFolder.Path);

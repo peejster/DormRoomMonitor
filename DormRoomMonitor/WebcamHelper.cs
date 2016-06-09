@@ -123,7 +123,7 @@ namespace DormRoomMonitor
         /// </summary>
         private string GenerateNewFileName()
         {
-            return DateTime.UtcNow.ToString("yyyy.MMM.dd HH-mm-ss") + " Facial Recognition Door";
+            return DateTime.UtcNow.ToString("HH-mm-ss") + "_Dorm_Room_Monitor";
         }
 
         /// <summary>

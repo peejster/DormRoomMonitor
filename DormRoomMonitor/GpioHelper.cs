@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Windows.Devices.Gpio;
+﻿using Windows.Devices.Gpio;
 
 namespace DormRoomMonitor
 {
@@ -11,7 +9,6 @@ namespace DormRoomMonitor
     {
         private GpioController gpioController;
         private GpioPin pirSensor;
-        private GpioPin doorLockPin;
 
         /// <summary>
         /// Initialize the GPIO pins. Configure the PIR motion sensor and the LED.
@@ -39,18 +36,6 @@ namespace DormRoomMonitor
             // Set the direction of the PIR sensor as input
             pirSensor.SetDriveMode(GpioPinDriveMode.Input);
 
-            // Opens the GPIO pin that interacts with the door lock system
-            doorLockPin = gpioController.OpenPin(GpioConstants.DoorLockPinID);
-            if (doorLockPin == null)
-            {
-                // Pin wasn't opened properly, return false
-                return false;
-            }
-            // Sets doorlock pin drive mode to output as pin will be used to output information to lock
-            doorLockPin.SetDriveMode(GpioPinDriveMode.Output);
-            // Initializes pin to high voltage. This locks the door. 
-            doorLockPin.Write(GpioPinValue.High);
-
             //Initialization was successfull, return true
             return true;
         }
@@ -62,20 +47,6 @@ namespace DormRoomMonitor
         {
             return pirSensor;
         }
-
-        /// <summary>
-        /// Unlocks door for time specified in GpioConstants class
-        /// </summary>
-        public async void UnlockDoor()
-        {
-            // Unlock door
-            doorLockPin.Write(GpioPinValue.Low);
-            // Wait for specified length
-            await Task.Delay(TimeSpan.FromSeconds(GpioConstants.DoorLockOpenDurationSeconds));
-            // Lock door
-            doorLockPin.Write(GpioPinValue.High);
-        }
-
     }
 }
 

@@ -8,7 +8,7 @@ using Windows.Storage;
 namespace DormRoomMonitor
 {
     /// <summary>
-    /// Allows easy access to oxford functions such as adding a visitor to whitelist and checing to see if a visitor is on the whitelist
+    /// Allows easy access to Oxford functions such as adding a visitor to whitelist and checking to see if a visitor is on the whitelist
     /// </summary>
     static class OxfordFaceAPIHelper
     {
@@ -26,7 +26,7 @@ namespace DormRoomMonitor
             // Attempts to open whitelist ID file, or creates one
             StorageFile WhiteListIdFile = await whitelistFolder.CreateFileAsync("WhiteListId.txt", CreationCollisionOption.OpenIfExists);
 
-            // Reads whitelist file and stores value
+            // Reads whitelist file to get whitelist ID and stores value
             string savedWhitelistId = await FileIO.ReadTextAsync(WhiteListIdFile);
 
             // If the ID has not been created, creates a whitelist ID
