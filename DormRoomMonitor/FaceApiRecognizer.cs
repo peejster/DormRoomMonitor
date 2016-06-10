@@ -238,7 +238,14 @@ namespace DormRoomMonitor.FacialRecognition
         /// <returns></returns>
         private async Task AddFace(Guid personId, Guid faceId, string imagePath)
         {
-            await _faceApiClient.AddPersonFaceAsync(WhitelistId, personId, imagePath);
+            await Task.Run(async () =>
+            {
+                using (Stream imageStream = File.OpenRead(imagePath))
+                {
+                    await _faceApiClient.AddPersonFaceAsync(WhitelistId, personId, imageStream);
+                }
+            });
+
             _whitelist.AddFace(personId, faceId, imagePath);
         }
 

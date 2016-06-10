@@ -246,9 +246,6 @@ namespace DormRoomMonitor
             // Announce that an intruder has been detected
             await speech.Read(SpeechContants.IntruderDetectedMessage);
 
-            // Pause to allow announcement to complete
-            // Task.Delay(5000).Wait();
-
             // Display analysing visitors grid to inform user that motion was sensed
             AnalysingVisitorGrid.Visibility = Visibility.Visible;
 
