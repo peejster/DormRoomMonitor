@@ -11,7 +11,7 @@
 
         // Oxford Face API Primary should be entered here
         // You can obtain a subscription key for Face API by following the instructions here: https://www.microsoft.com/cognitive-services/en-us/sign-up
-        public const string OxfordAPIKey = "b2b1adb22ce44bcc91e5cdfe2afb4f53";
+        public const string OxfordAPIKey = "<your subscription key here>";
 
         // Name of the folder in which all Whitelist data is stored
         public const string WhiteListFolderName = "Dorm_Room_Monitor_Whitelist";
