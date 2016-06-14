@@ -27,7 +27,7 @@
             </Grid.RowDefinitions>
             <Rectangle Margin="10" Stroke="White" StrokeThickness="4" Grid.RowSpan="2"/>
             <Image x:Name="image" HorizontalAlignment="Center" VerticalAlignment="Center" Source="Assets/CameraIcon.png" Margin="50"/>
-            <TextBlock x:Name="DisabledText" TextWrapping="Wrap" Text="The live camera feed has been disabled because of hardware constraints." HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" FontSize="24" TextAlignment="Center" Margin="10,0"/>
+            <TextBlock x:Name="DisabledText" TextWrapping="Wrap" Text="The live camera feed has been disabled because of hardware constraints." HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" FontSize="16" TextAlignment="Center" Margin="10,0"/>
         </Grid>
         <StackPanel x:Name="LiveFeedPanel" Margin="0, 10" Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <CaptureElement x:Name='WebcamFeed' Loaded="WebcamFeed_Loaded"/>
@@ -43,7 +43,7 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="8*" />
             </Grid.RowDefinitions>
-            <TextBlock x:Name="VisitorsTitleBlock" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Whitelisted Visitors" VerticalAlignment="Center" FontSize="24"/>
+            <TextBlock x:Name="VisitorsTitleBlock" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Whitelisted Visitors" VerticalAlignment="Center" FontSize="18"/>
             <GridView x:Name="WhitelistedUsersGrid" IsItemClickEnabled="True" Grid.Row="1" ItemClick="WhitelistedUsersGrid_ItemClick" Loaded="WhitelistedUsersGrid_Loaded" DataFetchSize="1">
                 <GridView.ItemTemplate>
                     <DataTemplate>
@@ -59,7 +59,7 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="8*" />
             </Grid.RowDefinitions>
-            <TextBlock x:Name="IntrudersTitleBlock" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Intruders" VerticalAlignment="Center" FontSize="24"/>
+            <TextBlock x:Name="IntrudersTitleBlock" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Intruders" VerticalAlignment="Center" FontSize="18"/>
             <GridView x:Name="IntrudersGrid" IsItemClickEnabled="True" Grid.Row="1" ItemClick="IntrudersGrid_ItemClick" Loaded="IntrudersGrid_Loaded" DataFetchSize="1">
                 <GridView.ItemTemplate>
                     <DataTemplate>
@@ -70,8 +70,8 @@
             <ProgressRing x:Name="IntrudersLoadingRing" Grid.Column="0" IsActive="True" Width="113" Height="80" Grid.RowSpan="2" Foreground="White"/>
         </Grid>
 
-        <TextBlock x:Name="WelcomeBlock" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Text="Welcome to the Dorm Room Monitor!" VerticalAlignment="Center" Grid.ColumnSpan="2" FontSize="36" Margin="50,0,50,100"/>
-        <TextBlock x:Name="DetailsBlock" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Text="Press the + icon to add a whitelisted user and get started! When you're ready, hit the enter icon to try and authorize access with your face!" VerticalAlignment="Center" Grid.ColumnSpan="2" FontSize="24" Margin="50,80,50,0" TextAlignment="Center"/>
+        <TextBlock x:Name="WelcomeBlock" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Text="Welcome to the Dorm Room Monitor!" VerticalAlignment="Center" Grid.ColumnSpan="2" FontSize="18" Margin="50,0,50,100"/>
+        <TextBlock x:Name="DetailsBlock" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Text="Press the + icon to add a whitelisted user and get started! When you're ready, hit the enter icon to try and authorize access with your face!" VerticalAlignment="Center" Grid.ColumnSpan="2" FontSize="18" Margin="50,0,50,0" TextAlignment="Center"/>
     </Grid>
     <Page.BottomAppBar>
         <CommandBar IsOpen="True" IsSticky="True" IsEnabled="True" Foreground="#FF7C3C3C">

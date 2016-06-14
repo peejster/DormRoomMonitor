@@ -1,1 +1,3 @@
-# DormRoomMonitor
+Add intelligence to your security system with Microsoft Cognitive Services' facial recognition. When motion is detected, the Universal Windows Platform app running on the Raspberry Pi 3 takes a picture using the attached webcam and sends it to the Microsoft Face service running on Azure for analysis. If the face is recognized - it's compared against a list of people which have been authorized to be in the room - the person is welcomed. Otherwise, the picture is saved by the system so that it can reviewed by the room owner later.
+
+Find step-by-step build instructions for this project on Hackster.io: https://www.hackster.io/peejster/facial-recognition-security-system-c6ca6c

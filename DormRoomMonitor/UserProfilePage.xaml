@@ -23,7 +23,7 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <TextBlock x:Name="VisitorNameBlock" Text="Visitor Name" Grid.Column="1" FontSize="80" VerticalAlignment="Center"/>
+        <TextBlock x:Name="VisitorNameBlock" Text="Visitor Name" Grid.Column="1" FontSize="24" VerticalAlignment="Center"/>
 
         <StackPanel Margin="0, 10" Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <CaptureElement x:Name='WebcamFeed'/>
